@@ -1,0 +1,55 @@
+// Inferred from server.js. The original zip did not include a schema file.
+// Default is SQLite so the app can be started without a local PostgreSQL.
+// To use PostgreSQL, change the provider and DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  sifre      String
+  ad         String?
+  role       String    @default("KULLANICI")
+  createdAt  DateTime  @default(now())
+  siparisler Siparis[]
+}
+
+model Yemek {
+  id         Int            @id @default(autoincrement())
+  ad         String         @unique
+  fiyat      Float
+  aciklama   String?
+  kategori   String
+  stoktaMi   Boolean        @default(true)
+  resimUrl   String?
+  createdAt  DateTime       @default(now())
+  detaylar   SiparisDetay[]
+}
+
+model Siparis {
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  kullanici    User           @relation(fields: [userId], references: [id])
+  toplamFiyat  Float
+  durum        String         @default("BEKLIYOR")
+  masaNumarasi String?
+  createdAt    DateTime       @default(now())
+  detaylar     SiparisDetay[]
+}
+
+model SiparisDetay {
+  id         Int     @id @default(autoincrement())
+  siparisId  Int
+  siparis    Siparis @relation(fields: [siparisId], references: [id], onDelete: Cascade)
+  yemekId    Int
+  yemek      Yemek   @relation(fields: [yemekId], references: [id])
+  adet       Int
+  oAnkiFiyat Float
+}
